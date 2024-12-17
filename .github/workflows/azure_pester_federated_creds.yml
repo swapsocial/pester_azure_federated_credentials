@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   run-pester-tests:
     runs-on: windows-latest  # Use Windows-based runner

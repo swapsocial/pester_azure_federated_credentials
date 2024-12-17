@@ -1,18 +1,18 @@
 Describe 'Azure IQ Tests with Pester' {
 
-    $testResults = @()
-
     Context 'Check if Resource Group exists' {
+
         It 'Should verify that the resource group exists' {
+            # Run Azure CLI to check if the resource group exists
             $resourceGroupName = 'YourResourceGroupName'
             $result = az group show --name $resourceGroupName --output json
 
+            # Assert that the resource group exists (it should not be null)
             $result | Should -Not -BeNullOrEmpty
+
+            # Optionally, assert specific properties of the resource group
             $resourceGroup = $result | ConvertFrom-Json
             $resourceGroup.name | Should -BeExactly $resourceGroupName
-
-            # Collect result
-            $testResults += "Resource group '$resourceGroupName' exists and validated."
         }
 
     }
@@ -23,52 +23,50 @@ Describe 'Azure IQ Tests with Pester' {
             $resourceGroupName = 'YourResourceGroupName'
             $vmName = 'YourVMName'
             
+            # Run Azure CLI to check if the VM exists
             $result = az vm show --name $vmName --resource-group $resourceGroupName --output json
 
+            # Assert that the VM exists (it should not be null)
             $result | Should -Not -BeNullOrEmpty
+
+            # Optionally, assert specific properties of the VM
             $vm = $result | ConvertFrom-Json
             $vm.name | Should -BeExactly $vmName
-
-            # Collect result
-            $testResults += "Virtual Machine '$vmName' exists in resource group '$resourceGroupName'."
         }
 
         It 'Should verify that the VM is running' {
             $resourceGroupName = 'YourResourceGroupName'
             $vmName = 'YourVMName'
 
+            # Run Azure CLI to check the power state of the VM
             $result = az vm get-instance-view --name $vmName --resource-group $resourceGroupName --query "instanceView.statuses[1].displayStatus" --output tsv
 
+            # Assert that the VM is in a running state
             $result | Should -BeExactly 'VM running'
-
-            # Collect result
-            $testResults += "Virtual Machine '$vmName' is in running state."
         }
 
         It 'Should verify the VM size' {
             $resourceGroupName = 'YourResourceGroupName'
             $vmName = 'YourVMName'
 
+            # Run Azure CLI to check the size of the VM
             $result = az vm show --name $vmName --resource-group $resourceGroupName --query "hardwareProfile.vmSize" --output tsv
 
-            $expectedSize = 'Standard_B1s'
+            # Assert that the VM is of the expected size
+            $expectedSize = 'Standard_B1s'  # Adjust as needed
             $result | Should -BeExactly $expectedSize
-
-            # Collect result
-            $testResults += "Virtual Machine '$vmName' has expected size '$expectedSize'."
         }
 
         It 'Should verify the OS disk type' {
             $resourceGroupName = 'YourResourceGroupName'
             $vmName = 'YourVMName'
 
+            # Run Azure CLI to check the OS disk type
             $result = az vm show --name $vmName --resource-group $resourceGroupName --query "storageProfile.osDisk.managedDisk.storageAccountType" --output tsv
 
-            $expectedDiskType = 'Premium_LRS'
+            # Assert that the OS disk is of the expected type
+            $expectedDiskType = 'Premium_LRS'  # Adjust as needed
             $result | Should -BeExactly $expectedDiskType
-
-            # Collect result
-            $testResults += "OS disk for VM '$vmName' has expected disk type '$expectedDiskType'."
         }
     }
 

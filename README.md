@@ -1,0 +1,1 @@
+# pester_azure_federated_credentials

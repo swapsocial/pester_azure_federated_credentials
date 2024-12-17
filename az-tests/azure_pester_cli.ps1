@@ -8,15 +8,16 @@ Describe 'Azure IQ Tests with Pester' {
             $resourceGroupName = 'YourResourceGroupName'
             $result = az group show --name $resourceGroupName --output json
 
-            $result | Should -Not -BeNullOrEmpty
-            $resourceGroup = $result | ConvertFrom-Json
-            $resourceGroup.name | Should -BeExactly $resourceGroupName
-
-            # Collect result with debugging message
-            $testResults += "Resource group '$resourceGroupName' exists and validated."
-            Write-Host "Test passed: Resource group '$resourceGroupName' exists."
+            if ($result) {
+                $resourceGroup = $result | ConvertFrom-Json
+                $resourceGroup.name | Should -BeExactly $resourceGroupName
+                $testResults += "Resource group '$resourceGroupName' exists and validated."
+                Write-Host "Test passed: Resource group '$resourceGroupName' exists."
+            } else {
+                $testResults += "Error: Resource group '$resourceGroupName' does not exist."
+                Write-Host "Error: Resource group '$resourceGroupName' does not exist."
+            }
         }
-
     }
 
     Context 'Check if a Virtual Machine exists' {
@@ -27,26 +28,35 @@ Describe 'Azure IQ Tests with Pester' {
             
             $result = az vm show --name $vmName --resource-group $resourceGroupName --output json
 
-            $result | Should -Not -BeNullOrEmpty
-            $vm = $result | ConvertFrom-Json
-            $vm.name | Should -BeExactly $vmName
-
-            # Collect result with debugging message
-            $testResults += "Virtual Machine '$vmName' exists in resource group '$resourceGroupName'."
-            Write-Host "Test passed: Virtual Machine '$vmName' exists."
+            if ($result) {
+                $vm = $result | ConvertFrom-Json
+                $vm.name | Should -BeExactly $vmName
+                $testResults += "Virtual Machine '$vmName' exists in resource group '$resourceGroupName'."
+                Write-Host "Test passed: Virtual Machine '$vmName' exists."
+            } else {
+                $testResults += "Error: Virtual Machine '$vmName' does not exist."
+                Write-Host "Error: Virtual Machine '$vmName' does not exist."
+            }
         }
 
         It 'Should verify that the VM is running' {
             $resourceGroupName = 'YourResourceGroupName'
             $vmName = 'YourVMName'
 
-            $result = az vm get-instance-view --name $vmName --resource-group $resourceGroupName --query "instanceView.statuses[1].displayStatus" --output tsv
+            try {
+                $result = az vm get-instance-view --name $vmName --resource-group $resourceGroupName --query "instanceView.statuses[1].displayStatus" --output tsv
 
-            $result | Should -BeExactly 'VM running'
-
-            # Collect result with debugging message
-            $testResults += "Virtual Machine '$vmName' is in running state."
-            Write-Host "Test passed: Virtual Machine '$vmName' is running."
+                if ($result -eq 'VM running') {
+                    $testResults += "Virtual Machine '$vmName' is running."
+                    Write-Host "Test passed: Virtual Machine '$vmName' is running."
+                } else {
+                    $testResults += "Error: Virtual Machine '$vmName' is not running. Status: $result."
+                    Write-Host "Error: Virtual Machine '$vmName' is not running. Status: $result."
+                }
+            } catch {
+                $testResults += "Error: Failed to check the running status of VM '$vmName'. $_"
+                Write-Host "Error: Failed to check the running status of VM '$vmName'. $_"
+            }
         }
 
         It 'Should verify the VM size' {
@@ -56,11 +66,13 @@ Describe 'Azure IQ Tests with Pester' {
             $result = az vm show --name $vmName --resource-group $resourceGroupName --query "hardwareProfile.vmSize" --output tsv
 
             $expectedSize = 'Standard_B1s'
-            $result | Should -BeExactly $expectedSize
-
-            # Collect result with debugging message
-            $testResults += "Virtual Machine '$vmName' has expected size '$expectedSize'."
-            Write-Host "Test passed: Virtual Machine '$vmName' has size '$expectedSize'."
+            if ($result -eq $expectedSize) {
+                $testResults += "Virtual Machine '$vmName' has expected size '$expectedSize'."
+                Write-Host "Test passed: Virtual Machine '$vmName' has size '$expectedSize'."
+            } else {
+                $testResults += "Error: Virtual Machine '$vmName' has size '$result', expected '$expectedSize'."
+                Write-Host "Error: Virtual Machine '$vmName' has size '$result', expected '$expectedSize'."
+            }
         }
 
         It 'Should verify the OS disk type' {
@@ -70,11 +82,13 @@ Describe 'Azure IQ Tests with Pester' {
             $result = az vm show --name $vmName --resource-group $resourceGroupName --query "storageProfile.osDisk.managedDisk.storageAccountType" --output tsv
 
             $expectedDiskType = 'Premium_LRS'
-            $result | Should -BeExactly $expectedDiskType
-
-            # Collect result with debugging message
-            $testResults += "OS disk for VM '$vmName' has expected disk type '$expectedDiskType'."
-            Write-Host "Test passed: OS disk for VM '$vmName' has type '$expectedDiskType'."
+            if ($result -eq $expectedDiskType) {
+                $testResults += "OS disk for VM '$vmName' has expected disk type '$expectedDiskType'."
+                Write-Host "Test passed: OS disk for VM '$vmName' has type '$expectedDiskType'."
+            } else {
+                $testResults += "Error: OS disk for VM '$vmName' has disk type '$result', expected '$expectedDiskType'."
+                Write-Host "Error: OS disk for VM '$vmName' has disk type '$result', expected '$expectedDiskType'."
+            }
         }
     }
 

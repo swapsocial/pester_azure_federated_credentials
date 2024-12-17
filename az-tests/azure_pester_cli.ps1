@@ -1,5 +1,6 @@
 Describe 'Azure IQ Tests with Pester' {
 
+    # Initialize an array to store test results
     $testResults = @()
 
     Context 'Check if Resource Group exists' {
@@ -11,8 +12,9 @@ Describe 'Azure IQ Tests with Pester' {
             $resourceGroup = $result | ConvertFrom-Json
             $resourceGroup.name | Should -BeExactly $resourceGroupName
 
-            # Collect result
+            # Collect result with debugging message
             $testResults += "Resource group '$resourceGroupName' exists and validated."
+            Write-Host "Test passed: Resource group '$resourceGroupName' exists."
         }
 
     }
@@ -29,8 +31,9 @@ Describe 'Azure IQ Tests with Pester' {
             $vm = $result | ConvertFrom-Json
             $vm.name | Should -BeExactly $vmName
 
-            # Collect result
+            # Collect result with debugging message
             $testResults += "Virtual Machine '$vmName' exists in resource group '$resourceGroupName'."
+            Write-Host "Test passed: Virtual Machine '$vmName' exists."
         }
 
         It 'Should verify that the VM is running' {
@@ -41,8 +44,9 @@ Describe 'Azure IQ Tests with Pester' {
 
             $result | Should -BeExactly 'VM running'
 
-            # Collect result
+            # Collect result with debugging message
             $testResults += "Virtual Machine '$vmName' is in running state."
+            Write-Host "Test passed: Virtual Machine '$vmName' is running."
         }
 
         It 'Should verify the VM size' {
@@ -54,8 +58,9 @@ Describe 'Azure IQ Tests with Pester' {
             $expectedSize = 'Standard_B1s'
             $result | Should -BeExactly $expectedSize
 
-            # Collect result
+            # Collect result with debugging message
             $testResults += "Virtual Machine '$vmName' has expected size '$expectedSize'."
+            Write-Host "Test passed: Virtual Machine '$vmName' has size '$expectedSize'."
         }
 
         It 'Should verify the OS disk type' {
@@ -67,15 +72,20 @@ Describe 'Azure IQ Tests with Pester' {
             $expectedDiskType = 'Premium_LRS'
             $result | Should -BeExactly $expectedDiskType
 
-            # Collect result
+            # Collect result with debugging message
             $testResults += "OS disk for VM '$vmName' has expected disk type '$expectedDiskType'."
+            Write-Host "Test passed: OS disk for VM '$vmName' has type '$expectedDiskType'."
         }
     }
 
     AfterAll {
         # Print the collected results at the end of all tests
         Write-Host "Test Results:"
-        $testResults | ForEach-Object { Write-Host $_ }
+        if ($testResults.Count -gt 0) {
+            $testResults | ForEach-Object { Write-Host $_ }
+        } else {
+            Write-Host "No results collected."
+        }
 
         # Clean up or log out if needed
         az logout

@@ -43,7 +43,7 @@ jobs:
         continue-on-error: true
         run: |
           # Path to the Pester test scripts
-          Invoke-Pester -Script .\az-tests\azure_pester_cli.ps1 -OutputFormat NUnitXml -OutputFile ./test-results/test-results.xml
+          Invoke-Pester -Script .\az-tests\azure_pester_cli.ps1 -OutputFormat NUnitXml -OutputFile ./test-results/test-results.xml -PassThru
         shell: pwsh 
       
             # Upload test results to GitHub Actions

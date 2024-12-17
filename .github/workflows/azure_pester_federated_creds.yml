@@ -43,7 +43,6 @@ jobs:
         continue-on-error: true
         run: |
           # Path to the Pester test scripts
-          az login --identity
           Invoke-Pester -Script .\az-tests\azure_pester_cli.ps1 -OutputFormat NUnitXml -OutputFile ./test-results/test-results.xml
         shell: pwsh 
       

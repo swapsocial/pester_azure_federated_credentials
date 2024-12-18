@@ -8,16 +8,12 @@ on:
 
 jobs:
   pester-test:
-    runs-on: ubuntu-latest  # You can also use windows-latest or macos-latest depending on the environment
+    runs-on: mcr.microsoft.com/azure-powershell:mariner-2
     
     steps:
     # Checkout the repository
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    # Set up PowerShell
-    - name: Set up PowerShell
-      uses: PowerShell/PowerShell@v7.2.6  # Use the latest stable version of PowerShell
     
     # Authenticate to Azure using Federated Credentials
     - name: Authenticate to Azure with Federated Credentials

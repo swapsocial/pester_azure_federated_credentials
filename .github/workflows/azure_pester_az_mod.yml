@@ -1,0 +1,41 @@
+name: Run Pester Tests with Federated Credentials
+
+# Trigger on push to the main branch or on pull requests to the main branch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pester-test:
+    runs-on: ubuntu-latest  # You can also use windows-latest or macos-latest depending on the environment
+    
+    steps:
+    # Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Set up PowerShell
+    - name: Set up PowerShell
+      uses: PowerShell/PowerShell@v7.2.6  # Use the latest stable version of PowerShell
+    
+    # Authenticate to Azure using Federated Credentials
+    - name: Authenticate to Azure with Federated Credentials
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}  # Set the client ID in secrets, this is for your Azure App Registration
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}  # Set the tenant ID in secrets
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    
+    # Install Pester module
+    - name: Install Pester
+      run: |
+        pwsh -Command "Install-Module -Name Pester -Force -Scope CurrentUser"
+
+    # Run Pester Tests
+    - name: Run Pester Tests
+      run: |
+        pwsh -Command "Invoke-Pester -Path ./tests -Verbose"  # Path to your test scripts
